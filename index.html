@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weavers of Wisdom</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Inter:wght@300;500&display=swap" rel="stylesheet">
+
+<style>
+body {
+  margin:0;
+  font-family: Inter, sans-serif;
+  background: radial-gradient(circle at top,#180033,#000);
+  color:white;
+  overflow-x:hidden;
+}
+
+/* HERO */
+.hero {
+  height:80vh;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+}
+
+.hero h1 {
+  font-family: Orbitron;
+  font-size:4rem;
+  background: linear-gradient(90deg,#b66bff,#6bf2ff);
+  -webkit-background-clip:text;
+  color:transparent;
+  text-shadow:0 0 20px rgba(150,100,255,.5);
+}
+
+.hero p {
+  opacity:.7;
+  margin-top:10px;
+}
+
+/* SECTION */
+.section {
+  max-width:1100px;
+  margin:auto;
+  padding:40px 20px;
+}
+
+.section h2 {
+  font-family: Orbitron;
+  text-align:center;
+  margin-bottom:40px;
+}
+
+/* GRID */
+.grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:25px;
+}
+
+/* SONG CARD */
+.song {
+  background:rgba(255,255,255,0.05);
+  backdrop-filter:blur(14px);
+  border-radius:18px;
+  padding:30px 20px;
+  text-align:center;
+  cursor:pointer;
+  transition:.35s;
+  border:1px solid rgba(255,255,255,0.08);
+  position:relative;
+  overflow:hidden;
+}
+
+.song:hover {
+  transform:translateY(-8px) scale(1.03);
+  box-shadow:0 0 30px rgba(120,0,255,0.5);
+}
+
+.song::before {
+  content:"▶";
+  position:absolute;
+  font-size:60px;
+  opacity:.06;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+}
+
+.song h3 {
+  margin:0;
+  font-weight:500;
+}
+
+/* FOOTER */
+footer {
+  text-align:center;
+  padding:40px;
+  opacity:.5;
+  font-size:14px;
+}
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <h1>Weavers of Wisdom</h1>
+  <p>Official Releases (In Beta)</p>
+</section>
+
+<section class="section">
+  <h2>Discography</h2>
+
+  <div class="grid">
+
+    <div class="song" onclick="window.open('https://www.youtube.com/watch?v=2RMoVlBLRkY&list=OLAK5uy_mT4fX_eOZfhkOYcgxSrs5b4lUrw8P7uYw','_blank')">
+      <h3>I Like Feathers</h3>
+    </div>
+
+    <div class="song" onclick="window.open('https://www.youtube.com/watch?v=sweB4TacDxk&list=OLAK5uy_notNrm2fUJSXAtbsfwC5jiDv7tUG_5j1U','_blank')">
+      <h3>Melody</h3>
+    </div>
+
+    <div class="song" onclick="window.open('https://www.youtube.com/watch?v=l7pXFr9O0XQ&list=OLAK5uy_k8bJ9rV4U-uTVmZ59VBC7T9CrJrxsSkbc','_blank')">
+      <h3>Heartbeat (Hindi)</h3>
+    </div>
+
+    <div class="song" onclick="window.open('https://www.youtube.com/watch?v=dDPfqtmnRdY&list=OLAK5uy_nZCufnVexd9Cmik8egL7zc4DslURSpfaI','_blank')">
+      <h3>Time Start</h3>
+    </div>
+
+    <div class="song" onclick="window.open('https://www.youtube.com/watch?v=3txbQ9wT6P4&list=OLAK5uy_kJtIQbFnZRSLlzBZK6MNXJQNEFz8PDcBA','_blank')">
+      <h3>Time Middle</h3>
+    </div>
+
+    <div class="song" onclick="window.open('https://www.youtube.com/watch?v=BeUEqu6h3_U&list=OLAK5uy_nqCpMv7IrfVDgy4dTh64TVxP05VAesLwE','_blank')">
+      <h3>Time End</h3>
+    </div>
+
+    <div class="song" onclick="window.open('https://www.youtube.com/watch?v=v8Qt5bYA8og&list=OLAK5uy_mDgPa2WJkCKLcsuOQ9pomyCo9Snfv12Ik','_blank')">
+      <h3>All The Way From Here</h3>
+    </div>
+
+    <div class="song" onclick="window.open('https://www.youtube.com/watch?v=1YTRPn_CsFw&list=OLAK5uy_miezv_hBqx6RgUX8FksbcNwJNif2D17AQ','_blank')">
+      <h3>Nursery Time</h3>
+    </div>
+
+    <div class="song" onclick="window.open('https://www.youtube.com/watch?v=m0j_ncq7rfE&list=OLAK5uy_mzuIspi5YvuwEp0NAUJZTZLQa8xUb_7yk','_blank')">
+      <h3>Spider Wisdom</h3>
+    </div>
+
+    <div class="song" onclick="window.open('https://www.youtube.com/watch?v=BwCecViVfEM&list=OLAK5uy_nSZKoabOZt5M-k0EuLgbmnc0TK2zha2ss','_blank')">
+      <h3>Sleep</h3>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  © Weavers of Wisdom
+</footer>
+
+</body>
+</html>
