@@ -2,18 +2,21 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Mining RNG Empire: Reforged</title>
+<title>Mining RNG Empire: Infinite Layers</title>
+<link rel="icon" type="image/png" href="4leaf.png">
 <style>
-body{margin:0;font-family:Arial;background:#0b0b0f;color:#eee}
-#top{background:#000;padding:10px;display:flex;gap:18px;flex-wrap:wrap}
+body{margin:0;font-family:Arial;background:#0a0a10;color:#eee}
+#top{background:#000;padding:10px;display:flex;gap:14px;flex-wrap:wrap}
 #wrap{display:flex}
-#side{width:360px;background:#15151c;padding:10px;height:calc(100vh - 52px);overflow:auto}
+#side{width:380px;background:#151520;padding:10px;height:calc(100vh - 52px);overflow:auto}
 #main{flex:1;padding:10px}
 button{width:100%;margin-top:6px;padding:8px;background:#4caf50;border:none;color:#fff;cursor:pointer}
 button:hover{background:#66bb6a}
 .card{border:1px solid #333;margin-top:8px;padding:8px}
-.locked{opacity:.3}
+.locked{opacity:.25}
 .legend{border-color:gold}
+.bar{width:100%;height:10px;background:#222;margin-top:4px}
+.fill{height:10px;background:#4caf50;width:0%}
 small{opacity:.7}
 </style>
 </head>
@@ -24,25 +27,40 @@ small{opacity:.7}
 <div>⛏ Ore: <span id="ore">0</span></div>
 <div>🏭 Refined: <span id="refined">0</span></div>
 <div>🌍 World: <span id="world">1</span></div>
+<div>🧬 Mutations: <span id="mut">0</span></div>
 <div>✨ Prestige: <span id="prestige">0</span></div>
 </div>
 
 <div id="wrap">
 <div id="side">
+
 <h3>Mining</h3>
 <button onclick="mineOnce()">Mine</button>
-<button onclick="superRoll()">SUPER ROLL (CD)</button>
-<button onclick="toggleAuto()">Toggle Auto</button>
+<button onclick="superRoll()">SUPER ROLL</button>
+<button onclick="toggleAuto()">Auto Mine</button>
+
+<h3>Factories</h3>
+<button onclick="buyFactory()">Buy Factory ($500)</button>
 
 <h3>Processing</h3>
 <button onclick="refine()">Refine (2→1)</button>
-<button onclick="sell()">Sell ($10)</button>
+<button onclick="sell()">Sell</button>
 
 <h3>Meta</h3>
-<button onclick="prestige()">Prestige Reset</button>
+<button onclick="prestige()">Prestige</button>
+
+<h3>Progress</h3>
+<div class="bar"><div id="worldBar" class="fill"></div></div>
 
 <h3>Upgrades</h3>
 <div id="upgrades"></div>
+
+<h3>Quests</h3>
+<div id="quests"></div>
+
+<h3>Achievements</h3>
+<div id="ach"></div>
+
 </div>
 
 <div id="main">
@@ -53,24 +71,27 @@ small{opacity:.7}
 
 <script>
 let state={
-money:100,
-ore:0,
-refined:0,
-auto:false,
-world:1,
-prestige:0,
-owned:new Set(),
-multi:1,
-superCD:0
+money:100,ore:0,refined:0,auto:false,world:1,prestige:0,mut:0,
+owned:new Set(),factories:0,multi:1
 };
 
-function worldMult(){return 1 + state.world*0.5 + state.prestige*0.25;}
+// zones per world
+let zones=[
+{name:"Surface",bonus:1},
+{name:"Caves",bonus:1.2},
+{name:"Deep Core",bonus:1.5},
+{name:"Void Rift",bonus:2}
+];
 
+function zone(){return zones[Math.min(state.world-1,zones.length-1)];}
+
+// ore + mutation system
 function getTable(){
-let base=[
-{name:'Dirt',c:80,v:1},
-{name:'Iron',c:10,v:5},
-{name:'Gold',c:7,v:10},
+let z=zone();
+return [
+{name:'Dirt',c:75*z.bonus,v:1},
+{name:'Iron',c:12*z.bonus,v:5},
+{name:'Gold',c:8*z.bonus,v:10},
 {name:'Diamond',c:2,v:80},
 {name:'Radium',c:0.5,v:500},
 {name:'Uranium',c:0.3,v:1200},
@@ -78,112 +99,115 @@ let base=[
 {name:'Cosmic Shard',c:0.04,v:300000},
 {name:'Void Core',c:0.009,v:2000000}
 ];
-for(let t of base){t.c*=worldMult();}
-return base;
 }
 
+function mutate(val){
+let m=1;
+if(Math.random()<0.01){m=2;state.mut++;log("🧬 Mutation x2!");}
+if(Math.random()<0.001){m=5;state.mut++;log("🧬 SUPER Mutation x5!");}
+return val*m;
+}
+
+// upgrades with effects (not just multipliers)
 let upgrades=[];
-for(let i=0;i<60;i++){
-upgrades.push({id:i,tier:Math.floor(i/6),cost:Math.pow(2,i/3)*100,type:i%3,power:1.05+i*0.01,req:i<6?null:i-1});
+for(let i=0;i<50;i++){
+upgrades.push({
+id:i,
+cost:100*Math.pow(1.5,i),
+req:i<5?null:i-1,
+effect:()=>{
+if(i%5===0) state.factories++;
+if(i%5===1) autoSpeed=Math.max(100,autoSpeed-50);
+if(i%5===2) mutationBoost+=0.002;
+if(i%5===3) refineBonus+=0.2;
+if(i%5===4) superRollPower++;
+}
+});
 }
 
-let mineSpeed=600;
+// factories
+function buyFactory(){
+if(state.money>=500){state.money-=500;state.factories++;}}
+
+// quests
+let quests=[
+{t:"Mine 1000 ore",check:()=>state.ore>=1000,done:false},
+{t:"Find 10 mutations",check:()=>state.mut>=10,done:false},
+{t:"Own 5 factories",check:()=>state.factories>=5,done:false}
+];
+
+// achievements
+let ach=[
+{t:"First Blood",check:()=>state.ore>0,done:false},
+{t:"Millionaire",check:()=>state.money>=1000000,done:false}
+];
+
+let autoSpeed=600,mutationBoost=1,refineBonus=1,superRollPower=5;
 
 function roll(){
-let table=getTable();
-let r=Math.random()*100,sum=0;
-for(let t of table){sum+=t.c;if(r<=sum)return t;}
-return table[0];
+let t=getTable();let r=Math.random()*100,sum=0;
+for(let x of t){sum+=x.c;if(r<=sum)return x;}
+return t[0];
 }
 
 function mineOnce(){
 let t=roll();
-let gain=t.v*state.multi*worldMult();
-state.ore+=gain;
-log(`⛏ ${t.name} (+${Math.floor(gain)})`);
-checkWorld();
-update();
+let v=mutate(t.v)*state.multi*zone().bonus;
+state.ore+=v;
+log(`⛏ ${t.name} +${Math.floor(v)}`);
+check();update();
 }
 
 function superRoll(){
-if(state.superCD>0)return;
-state.superCD=10;
-for(let i=0;i<20;i++)mineOnce();
-}
-
-function toggleAuto(){state.auto=!state.auto;}
+for(let i=0;i<superRollPower;i++)mineOnce();}
 
 function refine(){
-let amt=Math.floor(state.ore/2);
-state.ore-=amt*2;
-state.refined+=amt;
+let a=Math.floor(state.ore/2);
+state.ore-=a*2;
+state.refined+=a*refineBonus;
 update();
 }
 
-function sell(){
-state.money+=state.refined*10;
-state.refined=0;
-update();
+function sell(){state.money+=state.refined*10;state.refined=0;update();}
+
+function prestige(){if(state.ore<1e6)return;state.prestige++;state.money=100;state.ore=0;state.refined=0;state.owned.clear();}
+
+function buy(i){let u=upgrades[i];if(state.money<u.cost||state.owned.has(i))return;if(u.req&&!state.owned.has(u.req))return;state.money-=u.cost;state.owned.add(i);u.effect();update();}
+
+function check(){
+let th=[0,1e3,1e5,1e7,1e10];
+for(let i=th.length-1;i>=0;i--){if(state.ore>th[i])state.world=i+1;}
+quests.forEach(q=>{if(!q.done&&q.check())q.done=true;});
+ach.forEach(a=>{if(!a.done&&a.check())a.done=true;});
 }
 
-function prestige(){
-if(state.ore<1e6)return;
-state.prestige++;
-state.money=100;
-state.ore=0;
-state.refined=0;
-state.world=1;
-state.owned.clear();
-log("🔥 Prestige activated! Permanent boost gained.");
-update();
+function render(){
+let u=document.getElementById('upgrades');u.innerHTML='';
+upgrades.forEach(x=>{
+if(state.owned.has(x.id))return;
+let d=document.createElement('div');
+d.className='card';
+d.innerHTML=`Upgrade ${x.id}<br>$${Math.floor(x.cost)}`;
+let b=document.createElement('button');b.onclick=()=>buy(x.id);b.innerText='Buy';d.appendChild(b);u.appendChild(d);
+});
+
+let q=document.getElementById('quests');q.innerHTML=quests.map(x=>`<div class='card'>${x.t} ${x.done?'✔':''}</div>`).join('');
+let a=document.getElementById('ach');a.innerHTML=ach.map(x=>`<div class='card'>${x.t} ${x.done?'🏆':''}</div>`).join('');
 }
 
-function checkWorld(){
-let thresholds=[0,1e3,1e5,1e7,1e10,1e13];
-for(let i=thresholds.length-1;i>=0;i--){if(state.ore>thresholds[i]){state.world=i+1;break;}}
-}
-
-function buy(id){
-let u=upgrades[id];
-if(state.money<u.cost||state.owned.has(id))return;
-if(u.req!==null && !state.owned.has(u.req))return;
-state.money-=u.cost;
-state.owned.add(id);
-if(u.type===0) state.multi*=u.power;
-if(u.type===1) state.multi*=u.power;
-if(u.type===2) mineSpeed=Math.max(100,mineSpeed/u.power);
-update();
-}
-
-function renderUpgrades(){
-let d=document.getElementById('upgrades');
-d.innerHTML='';
-for(let u of upgrades){
-if(state.owned.has(u.id))continue;
-let div=document.createElement('div');
-let locked=u.req!==null && !state.owned.has(u.req);
-div.className='card '+(locked?'locked':'');
-if(u.tier>7)div.classList.add('legend');
-div.innerHTML=`U${u.id} T${u.tier}<br>$${Math.floor(u.cost)}`;
-if(!locked){let b=document.createElement('button');b.innerText='Buy';b.onclick=()=>buy(u.id);div.appendChild(b);}
-d.appendChild(div);
-}
-}
-
-function log(msg){let el=document.getElementById('log');el.innerHTML=`<div class='card'>${msg}</div>`+el.innerHTML;}
+function log(m){document.getElementById('log').innerHTML=`<div class='card'>${m}</div>`+document.getElementById('log').innerHTML;}
 
 function update(){
 document.getElementById('money').innerText=Math.floor(state.money);
 document.getElementById('ore').innerText=Math.floor(state.ore);
 document.getElementById('refined').innerText=Math.floor(state.refined);
 document.getElementById('world').innerText=state.world;
-document.getElementById('prestige').innerText=state.prestige;
-renderUpgrades();
+document.getElementById('mut').innerText=state.mut;
+render();
 }
 
-setInterval(()=>{if(state.auto)mineOnce();if(state.superCD>0)state.superCD--;},mineSpeed);
-
-update();
+setInterval(()=>{if(state.auto)mineOnce();},autoSpeed);
+setInterval(update,1000);
 </script>
 </body>
 </html>
